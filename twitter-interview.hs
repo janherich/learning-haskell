@@ -24,17 +24,17 @@ case6 :: [Int]
 case6 = [6,1,1,5]
 
 route :: Pos -> Pos -> (Relief,Relief,Relief) -> Ground -> (Relief,Relief,Relief)
-route pl ph (f,m,l) (h,p)
-    | (p > pl) && (p < ph) = (f,(h,p):m,l)
-    | p <= pl = ((h,p):f,m,l)
-    | p >= ph = (f,m,(h,p):l)
-    | otherwise = (f,m,l)
+route pl ph tr@(f,m,l) g@(h,p)
+    | (p > pl) && (p < ph) = (f,g:m,l)
+    | p <= pl = (g:f,m,l)
+    | p >= ph = (f,m,g:l)
+    | otherwise = tr
 
 summarize :: Height -> Relief -> Int
 summarize t = sum . map (\(h,_) -> t - h)
 
 split :: Relief -> (Relief,Int,Relief)
-split ((h1,p1):(h2,p2):xs) = prepare h2 . foldl (route pl ph) ([],[],[]) $ ((h1,p1):(h2,p2):xs)
+split rl@((h1,p1):(h2,p2):xs) = prepare h2 . foldl (route pl ph) ([],[],[]) $ rl
     where pl = min p1 p2
           ph = max p1 p2
           prepare t (f,m,l) = (f,summarize t m,l)
