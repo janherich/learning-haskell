@@ -1,9 +1,13 @@
 import Data.List
 
+-- type synonyms
+
 type Pos = Int
 type Height = Int
 type Ground =  (Height,Pos)
 type Relief = [Ground]
+
+-- test cases
 
 case1 :: [Int]
 case1 = [2,5,1,2,3,4,7,7,6]
@@ -22,6 +26,8 @@ case5 = [1,4,3,4,3,4,1]
 
 case6 :: [Int]
 case6 = [6,1,1,5]
+
+-- first recursive solution (very ineffective and complicated)
 
 route :: Pos -> Pos -> (Relief,Relief,Relief) -> Ground -> (Relief,Relief,Relief)
 route pl ph tr@(f,m,l) g@(h,p)
@@ -45,6 +51,15 @@ processRec = process . split . reverse . sort
     where process ([],m,[]) = m
           process (f,m,l) = processRec f + m + processRec l
 
-calculatePuddle :: [Int] -> Int
-calculatePuddle = processRec . snd . mapAccumL indexFold 0
+calculatePuddle1 :: [Int] -> Int
+calculatePuddle1 = processRec . snd . mapAccumL indexFold 0
     where indexFold acc n = (succ acc, (n,acc))
+
+-- second solution (much more effective and simpler)
+
+mapBounds :: [Int] -> [Int]
+mapBounds relief@(x:xs) = snd $ mapAccumL process x relief
+    where process m n = let cm = max m n in (cm, cm - n)
+                                         
+calculatePuddle2 :: [Int] -> Int
+calculatePuddle2 relief = sum $ zipWith min (mapBounds (reverse relief)) (mapBounds relief) 
